@@ -12,7 +12,7 @@ import subprocess as sp
 
 
 import numpy as np
-import cv2  # opencv-python
+# import cv2  # opencv-python
 import pygame
 import ffmpeg  # ffmpeg-python, https://github.com/kkroening/ffmpeg-python
 
@@ -88,7 +88,7 @@ def main():
         array_data: np.array = pygame.surfarray.array3d(screen)
         array_data = array_data.astype(np.uint8)
         array_data = array_data.swapaxes(0, 1)
-        array_data_bgr = cv2.cvtColor(array_data, cv2.COLOR_RGB2BGR)
+        # array_data_bgr = cv2.cvtColor(array_data, cv2.COLOR_RGB2BGR)
 
         # show array data using cv2
         # cv2.imshow('screen', array_data_bgr)
@@ -97,8 +97,8 @@ def main():
         # FFMPEG part-----------------------------------------------------------
 
         # input array_data as byte data via stdin
-        # writing_process.stdin.write(array_data.tobytes())
-        writing_process.stdin.write(array_data_bgr.tobytes())
+        writing_process.stdin.write(array_data.tobytes())
+        # writing_process.stdin.write(array_data_bgr.tobytes())
         pygame.time.wait(100)
 
     pygame.quit()
