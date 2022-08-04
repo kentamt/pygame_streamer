@@ -19,7 +19,7 @@ import ffmpeg  # ffmpeg-python, https://github.com/kkroening/ffmpeg-python
 
 def main():
 
-    os.environ["SDL_VIDEODRIVER"] = "dummy"
+    # os.environ["SDL_VIDEODRIVER"] = "dummy"
     pygame.init()
 
     # Set up the drawing window
@@ -31,29 +31,56 @@ def main():
     # init ffmpeg process
 
     # video_format = 'mp4'  # you cannot use mp4 for pipe
-    video_format = 'flv'
+    # video_format = 'flv'
     # video_format = 'ts'
+    video_format = 'mpegts'
 
     # url = 'http://localhost:8080'
     rtmp_url = 'rtmp://localhost:1935/stream'
     http_url = 'http://localhost:8080'
-    # url = 'rtp://localhost/stream'
+    udp_url = 'udp://239.0.0.1:1234?ttl=13'
+
+    # writing_process = (
+    #     ffmpeg
+    #     .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
+    #     .output(
+    #         http_url,
+    #         pix_fmt="yuv420p",
+    #         vcodec="libx264",  # use same codecs of the original video
+    #         listen=1,  # enables HTTP server
+    #         movflags='frag_keyframe+empty_moov',
+    #         # movflags='frag_keyframe',
+    #         # movflags='empty_moov',
+    #         preset="veryfast",
+    #         max_muxing_queue_size=512,
+    #         f=video_format)
+    #     # .global_args("-re")  # argument to act as a live stream
+    #     .run_async(pipe_stdin=True)
+    # )
+
+    # writing_process = (
+    #     ffmpeg
+    #     .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
+    #     .output(
+    #         udp_url,
+    #         pix_fmt="yuv420p",
+    #         vcodec="libx264",
+    #         preset="veryfast",
+    #         f=video_format)
+    #     .run_async(pipe_stdin=True)
+    # )
 
     writing_process = (
         ffmpeg
         .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
         .output(
-            http_url,
+            "rtp://239.0.0.1:50004",
             pix_fmt="yuv420p",
-            vcodec="libx264",  # use same codecs of the original video
-            listen=1,  # enables HTTP server
-            movflags='frag_keyframe+empty_moov',
-            # movflags='frag_keyframe',
-            # movflags='empty_moov',
+            vcodec="libx264",
+
             preset="veryfast",
-            max_muxing_queue_size=512,
-            f=video_format)
-        # .global_args("-re")  # argument to act as a live stream
+            sdp_file='saved_sdp_file',
+            f='rtp')
         .run_async(pipe_stdin=True)
     )
 
