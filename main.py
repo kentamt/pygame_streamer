@@ -30,8 +30,8 @@ def main():
 
     # init ffmpeg process
 
-    video_format = 'mp4'  # you cannot use mp4 for pipe
-    # video_format = 'flv'
+    # video_format = 'mp4'  # you cannot use mp4 for pipe
+    video_format = 'flv'
     # video_format = 'ts'
 
     # url = 'http://localhost:8080'
@@ -39,49 +39,11 @@ def main():
     http_url = 'http://localhost:8080'
     # url = 'rtp://localhost/stream'
 
-    # writing_process = (
-    #     ffmpeg
-    #     .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
-    #     .output(
-    #         url,
-    #         vcodec='h264',
-    #         listen=1,  # enables HTTP server
-    #         pix_fmt="yuv420p",
-    #         preset="ultrafast",
-    #         video_bitrate='1.4M',
-    #         threads=4,
-    #         f='flv'
-    #     )
-    #     .overwrite_output()
-    #     .global_args("-re")
-    #     .run_async(pipe_stdin=True)
-    # )
-
-    # writing_process = (
-    #     ffmpeg
-    #     .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
-    #     .output(
-    #         rtmp_url,
-    #         vcodec='h264',
-    #         listen=1,  # enables HTTP server
-    #         pix_fmt="yuv420p",
-    #         preset="ultrafast",
-    #         movflags='frag_keyframe+empty_moov',
-    #         video_bitrate='1.4M',
-    #         threads=4,
-    #         f='mp4'
-    #     )
-    #     .overwrite_output()
-    #     .global_args("-re")
-    #     .run_async(pipe_stdin=True)
-    # )
-    #
     writing_process = (
         ffmpeg
         .input('pipe:', format='rawvideo', codec="rawvideo", pix_fmt='bgr24', s='{}x{}'.format(w, h))
         .output(
             http_url,
-            framerate='9',
             pix_fmt="yuv420p",
             vcodec="libx264",  # use same codecs of the original video
             listen=1,  # enables HTTP server
