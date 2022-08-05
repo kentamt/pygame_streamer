@@ -143,29 +143,51 @@ def main():
 
     dimension = '{}x{}'.format(w, h)
     f_format = 'bgr24'  # remember OpenCV uses bgr format
+    # command = ['ffmpeg',
+    #            '-y',
+    #            '-f', 'rawvideo',
+    #            '-vcodec', 'rawvideo',
+    #            '-pix_fmt', 'bgr24',
+    #            '-s', dimension,
+    #            '-r', '9.7',
+    #            # '-re',
+    #            '-i', '-',
+    #            # '-an',
+    #            '-c:v', 'libx264',  #
+    #            '-pix_fmt', "yuv420p",
+    #            '-b:v', '10000k',
+    #            '-preset', 'ultrafast',
+    #            '-seg_duration', '2',
+    #            # '-streaming', '1',
+    #            '-window_size', '5',
+    #            '-remove_at_exit', '1',
+    #            # '-r', '10',
+    #            '-f', 'dash',
+    #            '/dev/shm/dash/live.mpd']
+
+
+
     command = ['ffmpeg',
                '-y',
                '-f', 'rawvideo',
                '-vcodec', 'rawvideo',
                '-pix_fmt', 'bgr24',
-               '-s', dimension,
-               # '-r', '10',
-               '-re',
+               '-s', f'{w}x{h}',
+               '-r', '9.5',
+               # '-re',
                '-i', '-',
                # '-an',
                '-c:v', 'libx264',  #
                '-pix_fmt', "yuv420p",
-               '-b:v', '2000k',
                '-preset', 'ultrafast',
-               '-seg_duration', '5',
-               # '-streaming', '1',
-               '-window_size', '10',
-               '-remove_at_exit', '1',
-               '-r', '10',
-               '-f', 'dash',
-               '/dev/shm/dash/live.mpd']
-
-
+               '-b:v', '10000k',
+               '-force_key_frames', "expr:gte(t,n_forced*1)",
+               '-hls_time', "1",
+               '-hls_flags', "delete_segments",
+               # '-remove_at_exit', '1',
+               # '-segment_wrap', "10",
+               '-f', 'hls',
+               '/var/www/html/hls/live.m3u8']
 
     writing_process = sp.Popen(command, stdin=sp.PIPE)
 
