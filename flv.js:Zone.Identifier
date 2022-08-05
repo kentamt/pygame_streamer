@@ -1,4 +1,0 @@
-[ZoneTransfer]
-ZoneId=3
-ReferrerUrl=https://github.com/bilibili/flv.js/releases
-HostUrl=https://objects.githubusercontent.com/github-production-release-asset-2e65be/58623321/c09fbcd9-ab80-4abc-965f-239694541cc7?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWNJYAX4CSVEH53A%2F20220804%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20220804T091638Z&X-Amz-Expires=300&X-Amz-Signature=d380f5c4c4cfb4ff71b3c057253638691c2d9740b9317eee49d71dd03638c25e&X-Amz-SignedHeaders=host&actor_id=3883043&key_id=0&repo_id=58623321&response-content-disposition=attachment%3B%20filename%3Dflv.js&response-content-type=application%2Foctet-stream
