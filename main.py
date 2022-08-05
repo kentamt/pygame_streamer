@@ -4,7 +4,7 @@
 #
 # tested on Ubuntu20.04, python 3.9.13
 # 20220802
-# Kenta Matsui
+# Kentamt
 
 import os
 import time
