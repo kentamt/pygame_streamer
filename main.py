@@ -16,7 +16,7 @@ from pygame_streamer import PygameStreamer
 def main():
 
     # if you want to test without pygame GUI, use this.
-    os.environ["SDL_VIDEODRIVER"] = "dummy"
+    # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
     pygame.init()
     font = pygame.font.Font(pygame.font.get_default_font(), 15)
@@ -29,11 +29,14 @@ def main():
 
     # Set up pygame streamer
     fps = 9.5  # not exact 10
-    streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='hls', hls_time=1)
+    # streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='hls', chunk_time=1)
+    streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='dash', chunk_time=1)
+    # streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='rtp')
 
     counter = 0
     running = True
     while running:
+        start = time.time()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,14 +50,17 @@ def main():
         # stream pygame screen
         streamer.write(screen)
 
-        # sleep
-        time.sleep(0.1)
 
         # move circle and count up
         x += 32
         if x > w + r:
             x = 0
         counter += 1
+
+        end = time.time()
+        elapsed = end - start
+        pygame.time.wait(100-int(elapsed*1000))
+
 
     pygame.quit()
 
