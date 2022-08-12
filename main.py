@@ -6,11 +6,12 @@
 # 20220802
 # Kentamt
 
-import os
-import time
+import os, sys
 import pygame
 import numpy as np
 from pygame_streamer import PygameStreamer
+
+from multiprocessing import Process, Queue
 
 
 def main():
@@ -18,25 +19,22 @@ def main():
     # if you want to test without pygame GUI, use this.
     # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
+    # Set up the drawing window
     pygame.init()
     font = pygame.font.Font(pygame.font.get_default_font(), 15)
-
-    # Set up the drawing window
     w, h = 320, 240
     x, y = 0, 120
     r = 16
+    pygame_sleep_time = int(1.0/int(sys.argv[1]) * 1000) # [msec]
     screen = pygame.display.set_mode([w, h])
 
     # Set up pygame streamer
-    fps = 9.5  # not exact 10
-    # streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='hls', chunk_time=1)
-    streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='dash', chunk_time=1)
-    # streamer = PygameStreamer(w, h, fps, bitrate='10000k', speed_option='ultrafast', format='rtp')
+    fps = 15
+    streamer = PygameStreamer(w, h, fps, output='./hls/live.m3u8', format='hls', chunk_time=1)
 
     counter = 0
     running = True
     while running:
-        start = time.time()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -47,9 +45,12 @@ def main():
         draw_screen(counter, font, h, r, screen, w, x, y)
         pygame.display.flip()
 
-        # stream pygame screen
-        streamer.write(screen)
+        # put an image in a queue
+        image = streamer.pygame_to_image(screen)
+        streamer.image_queue.put(image)
 
+        # sleep
+        pygame.time.wait(pygame_sleep_time)
 
         # move circle and count up
         x += 32
@@ -57,13 +58,7 @@ def main():
             x = 0
         counter += 1
 
-        end = time.time()
-        elapsed = end - start
-        pygame.time.wait(100-int(elapsed*1000))
-
-
     pygame.quit()
-
 
 def draw_screen(counter, font, h, r, screen, w, x, y):
 
