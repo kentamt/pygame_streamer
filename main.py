@@ -25,12 +25,18 @@ def main():
     w, h = 320, 240
     x, y = 0, 120
     r = 16
-    pygame_sleep_time = int(1.0/int(sys.argv[1]) * 1000) # [msec]
+    pygame_fps = int(sys.argv[1])
+    pygame_sleep_time = int(1.0/ pygame_fps* 1000) # [msec]
     screen = pygame.display.set_mode([w, h])
 
     # Set up pygame streamer
     fps = 15
-    streamer = PygameStreamer(w, h, fps, output='./hls/live.m3u8', format='hls', chunk_time=1)
+    streamer = PygameStreamer(w, h, fps,
+                              bitrate='10000k',
+                              output='./hls/live.m3u8',
+                              format='hls',
+                              chunk_time=1)
+    
 
     counter = 0
     running = True
