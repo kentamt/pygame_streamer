@@ -35,7 +35,8 @@ def main():
                               bitrate='10000k',
                               output='./hls/live.m3u8',
                               format='hls',
-                              chunk_time=1)
+                              chunk_time=2,
+                              verbose=True)
     
 
     counter = 0
@@ -64,7 +65,10 @@ def main():
             x = 0
         counter += 1
 
+    print('terminate streamer')
+    streamer.terminate()
     pygame.quit()
+    print('EOP')
 
 def draw_screen(counter, font, h, r, screen, w, x, y):
 

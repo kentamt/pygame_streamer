@@ -8,7 +8,7 @@ import time
 from queue import Queue, Empty
 from threading import Thread
 
-from multiprocessing import Pool, Process, Queue
+from multiprocessing import Process, Queue
 import subprocess as sp
 import numpy as np
 import pygame
@@ -44,6 +44,10 @@ class PygameStreamer():
         self._output = None
         self._output = output
         
+        # speed parameter
+        self._k = 0.2
+        self._margin = 0.005
+        
         # For hls options
         self._chunk_time = str(chunk_time)
         
@@ -55,34 +59,43 @@ class PygameStreamer():
         
         # subprocess for ffmpeg
         self._sleep_sec = 1.0 / float(self._fps)
-        self.image_queue = Queue()
         self._previous_data = None        
         self._writing_process = None
-        
-        # start process
-        self._async_write_proc = Process(target=self.async_write, args=(self.image_queue,))
+       
+        # subprocess for writing 
+        self.image_queue = Queue()
+        self.stop_request = Queue()
+        self._running = True
+        self._finished = False
+        self._async_write_proc = Process(target=self.async_write, args=(self.image_queue, self.stop_request))
         self._async_write_proc.start()
-        
-        # don't define variables here.
-        
-    def __exit__(self):
-        self._writing_process.stdin.close()
-        self._writing_process.kill()
-        self._async_write_proc.kill()
 
+    def terminate(self):
+        self.stop_request.put(True)
+        if self._finished:
+            if self._verbose:
+                print('terminate subprocesses')
+                
+            self._writing_process.stdin.close()
+            self._writing_process.kill()
+            self._async_write_proc.terminate()
+  
     def pygame_to_image(self, screen):
         array_data: np.array = pygame.surfarray.array3d(screen)
         array_data = array_data.astype(np.uint8)
         array_data = array_data.swapaxes(0, 1)
         array_data = array_data[..., [2, 1, 0]].copy()  # RGB2BGR
         return array_data
-
+    
     def __get_speed(self, line):
         ratio = None
         words = line.split(' ')
+        
         for word in words:
             elems = word.split('=')
-            if elems[0] == 'speed' and elems[1] != '':
+            if elems[0] == 'speed' and elems[1]  == 'N/A':
+                pass
+            elif elems[0] == 'speed' and elems[1] != '':
                 ratio = float(elems[1].split('x')[0])
         return ratio
     
@@ -101,11 +114,14 @@ class PygameStreamer():
             ratio = self.__get_speed(line)
             
             if ratio is not None:
-                print(ratio,  flush=True)
-                if ratio < 1.0:
-                    self._sleep_sec *= 1.0 - (1.0 - ratio) * 0.3
-                elif 1.0 < ratio:
-                    self._sleep_sec *= 1.0 + (ratio - 1.0) * 0.3
+                
+                if self._verbose:
+                    print(ratio,  flush=True)
+                    
+                if ratio < 1.0 + self._margin:
+                    self._sleep_sec *= 1.0 - (1.0 - ratio) * self._k
+                elif 1.0 - self._margin < ratio:
+                    self._sleep_sec *= 1.0 + (ratio - 1.0) * self._k
                     
                     
     def __set_previous_data(self, array_data):
@@ -117,13 +133,17 @@ class PygameStreamer():
             self.image_queue.get()
             
             
-    def async_write(self, q: Queue):
+    def async_write(self, image_queue: Queue, stop_request :Queue):
         
         self.__init_process()
         
-        while True:
-            if not self.image_queue.empty():
-                array_data = self.image_queue.get()
+        while self._running:
+            
+            if not stop_request.empty():
+                self._running = False
+            
+            if not image_queue.empty():
+                array_data = image_queue.get()
                 
                 self._writing_process.stdin.write(array_data.tobytes())
                 self.__adjust_speed()
@@ -137,6 +157,9 @@ class PygameStreamer():
                     
             time.sleep(self._sleep_sec)
             
+
+        self._finished = True
+        
     def __init_process(self):
         if self._format == 'hls':
             command = ['ffmpeg',
